@@ -17,6 +17,10 @@ import android.os.Bundle;
 import android.os.UserHandle;
 import android.util.ArraySet;
 import android.util.Slog;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 
 import com.android.internal.app.ContactScopes;
 import com.android.server.pm.Computer;
@@ -173,6 +177,61 @@ public class PackageManagerHooks {
             case "com.aurora.store":
             case "com.aurora.store.nightly":
                 return true;
+        }
+        return false;
+    }
+
+    public static boolean shouldFilterApplicationUser(String callerpkg, String targetpkg) {
+        static final String TAG = "AppsFilter";
+        static final String CONFIG_FILE_PATH = "/data/system/ApplicationFilterUser.txt";
+        if (callerpkg == null || targetpkg == null)
+            return false;
+        File configFile = new File(CONFIG_FILE_PATH);
+        
+        if (!configFile.exists()) {
+            File parentDir = configFile.getParentFile();
+
+            if (parentDir != null && !parentDir.exists()) {
+                return false;
+            }
+            boolean created = configFile.createNewFile();
+            return false;
+        }
+        
+        if (!configFile.canRead()) {
+            Slog.e(TAG, "Cannot read config file: " + CONFIG_FILE_PATH);
+            return false;
+        }
+        
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader(configFile));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                // Trim whitespace
+                line = line.trim();
+                if (line.isEmpty()) {
+                    continue;
+                }
+                String[] packages = line.split("\\s+");
+                if (packages.length < 2)
+                    continue;
+                if(callerpkg.equals(packages[0]) && targetpkg.equals(packages[1])){
+                    return true;
+                }
+            }
+            
+        } catch (IOException e) {
+            Slog.e(TAG, "Error reading config file: " + CONFIG_FILE_PATH, e);
+            return false;
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    Slog.e(TAG, "Error closing config file reader", e);
+                }
+            }
         }
         return false;
     }

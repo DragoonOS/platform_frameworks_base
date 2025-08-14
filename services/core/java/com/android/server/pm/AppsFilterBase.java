@@ -351,6 +351,12 @@ public abstract class AppsFilterBase implements AppsFilterSnapshot {
                         && !isImplicitlyQueryable(callingUid, targetUid)
                         && !isQueryableBySdkSandbox(callingUid, targetUid);
             }
+            if (callingSetting instanceof PackageStateInternal) {
+                final PackageStateInternal packageState = (PackageStateInternal) callingSetting;
+                if (PackageManagerHooks.isUserFiltered(packageState.getPackageName(),targetPkgSetting.getPackageName()))
+                    return true;
+            }
+            
             // use cache
             if (mCacheReady && mCacheEnabled) {
                 if (!shouldFilterApplicationUsingCache(callingUid,
