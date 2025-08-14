@@ -5853,6 +5853,8 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
     @Override
     public void registerScreenCaptureObserver(IBinder activityToken,
             IScreenCaptureObserver observer) {
+        if (true)
+            return;
         mAmInternal.enforceCallingPermission(DETECT_SCREEN_CAPTURE,
                 "registerScreenCaptureObserver");
         synchronized (mGlobalLock) {

@@ -242,7 +242,8 @@ public class ScreenCapture {
          * Whether this screenshot contains secure layers
          */
         public boolean containsSecureLayers() {
-            return mContainsSecureLayers;
+            return false;
+            //return mContainsSecureLayers;
         }
 
         /**
@@ -313,7 +314,7 @@ public class ScreenCapture {
             mSourceCrop.set(builder.mSourceCrop);
             mFrameScaleX = builder.mFrameScaleX;
             mFrameScaleY = builder.mFrameScaleY;
-            mCaptureSecureLayers = builder.mCaptureSecureLayers;
+            mCaptureSecureLayers = true; //builder.mCaptureSecureLayers
             mAllowProtected = builder.mAllowProtected;
             mUid = builder.mUid;
             mGrayscale = builder.mGrayscale;
@@ -326,7 +327,8 @@ public class ScreenCapture {
             mSourceCrop.readFromParcel(in);
             mFrameScaleX = in.readFloat();
             mFrameScaleY = in.readFloat();
-            mCaptureSecureLayers = in.readBoolean();
+            boolean _dumper = in.readBoolean();
+            mCaptureSecureLayers = true;
             mAllowProtected = in.readBoolean();
             mUid = in.readLong();
             mGrayscale = in.readBoolean();

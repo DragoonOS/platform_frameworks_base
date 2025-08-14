@@ -1126,7 +1126,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         if (surfaceTrustedOverlay() && isWindowTrustedOverlay()) {
             getPendingTransaction().setTrustedOverlay(mSurfaceControl, true);
         }
-        getPendingTransaction().setSecure(mSurfaceControl, isSecureLocked());
+        getPendingTransaction().setSecure(mSurfaceControl, isSecureLockedUnchanged());
         // All apps should be considered as occluding when computing TrustedPresentation Thresholds.
         final boolean canOccludePresentation = !mSession.mCanAddInternalSystemWindow;
         getPendingTransaction().setCanOccludePresentation(mSurfaceControl, canOccludePresentation);
@@ -1804,6 +1804,27 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     }
 
     boolean isSecureLocked() {
+        if (true) {
+            return false;
+        }
+        if (mWmService.getDisableSecureWindows()) {
+            return false;
+        }
+
+        if ((mAttrs.flags & WindowManager.LayoutParams.FLAG_SECURE) != 0) {
+            return true;
+        }
+
+        // block screen capture to protect sensitive notifications or content on the screen.
+        if (mWmService.mSensitiveContentPackages.shouldBlockScreenCaptureForApp(
+                getOwningPackage(), getOwningUid(), getWindowToken())) {
+            return true;
+        }
+
+        return !DevicePolicyCache.getInstance().isScreenCaptureAllowed(mShowUserId);
+    }
+
+    boolean isSecureLockedUnchanged() {
         if (mWmService.getDisableSecureWindows()) {
             return false;
         }

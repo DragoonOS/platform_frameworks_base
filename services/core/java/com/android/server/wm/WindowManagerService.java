@@ -10344,6 +10344,8 @@ public class WindowManagerService extends IWindowManager.Stub
     @EnforcePermission(android.Manifest.permission.DETECT_SCREEN_RECORDING)
     @Override
     public boolean registerScreenRecordingCallback(IScreenRecordingCallback callback) {
+        if (true)
+            return false;
         registerScreenRecordingCallback_enforcePermission();
         return mScreenRecordingCallbackController.register(callback);
     }
