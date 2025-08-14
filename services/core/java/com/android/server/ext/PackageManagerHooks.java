@@ -135,6 +135,11 @@ public class PackageManagerHooks {
             }
         }
 
+        if (callingPkgSetting != null) {
+            if (shouldFilterApplicationUser(callingPkgSetting.getPackageName(), targetPkgSetting.getPackageName()))
+                return true;
+        }
+
         if (restrictedVisibilityPackages.contains(targetPkgSetting.getPackageName())) {
             if (callingPkgSetting != null) {
                 return !callingPkgSetting.isSystem();
@@ -181,9 +186,9 @@ public class PackageManagerHooks {
         return false;
     }
 
-    public static boolean shouldFilterApplicationUser(String callerpkg, String targetpkg) {
-        static final String TAG = "AppsFilter";
-        static final String CONFIG_FILE_PATH = "/data/system/ApplicationFilterUser.txt";
+    private static boolean shouldFilterApplicationUser(String callerpkg, String targetpkg) {
+        final String TAG = "AppsFilter";
+        final String CONFIG_FILE_PATH = "/data/system/ApplicationFilterUser.txt";
         if (callerpkg == null || targetpkg == null)
             return false;
         File configFile = new File(CONFIG_FILE_PATH);
@@ -194,7 +199,11 @@ public class PackageManagerHooks {
             if (parentDir != null && !parentDir.exists()) {
                 return false;
             }
-            boolean created = configFile.createNewFile();
+            try {
+                boolean created = configFile.createNewFile();
+            } catch (IOException e) {
+                Slog.e(TAG, "Error creating config file: " + CONFIG_FILE_PATH, e);
+            } 
             return false;
         }
         
@@ -223,7 +232,6 @@ public class PackageManagerHooks {
             
         } catch (IOException e) {
             Slog.e(TAG, "Error reading config file: " + CONFIG_FILE_PATH, e);
-            return false;
         } finally {
             if (reader != null) {
                 try {
